@@ -5,6 +5,56 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const router = express.Router();
 const cors = require('cors')
+
+const mongoose = require('mongoose')
+mongoose.connect('mongodb://127.0.0.1:27017/desarrolloweb')
+
+var mysql = require('mysql')
+
+var connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  database: 'mysql'
+})
+connection.connect(function(err){
+  if(err){
+    console.error(err);
+    return;
+  }
+  console.log('ID'+connection.threadId)
+})
+
+let queryCreateDB = 'CREATE DATABASE IF NOT EXISTS desarrolloweb'
+
+connection.query(queryCreateDB, function(err, results, fields){
+  if(err){
+    console.log(err);
+    return;
+  }else{
+    console.log(results);
+  }
+});
+
+let queryCreateTableGoals = 'CREATE TABLE IF NOT EXISTS `goals` ( \
+  `id` int(11) NOT NULL auto_increment, \   \
+  `name` varchar(250) NOT NULL default \'\', \
+  `description` varchar(250) NOT NULL DEFAULT \'\', \
+  `dueDate` varchar(250) NOT NULL DEFAULT \'\', \
+  PRIMARY KEY (`id`) \
+  );'
+
+connection.query(queryCreateTableGoals , function(err, results, fields){
+  if(err){
+    console.log(err);
+    return;
+  }else{
+    console.log(results);
+  }
+});
+
+connection.destroy()
+
+
 let apiKey;
 
 function generarAPIKey(longitud) {
