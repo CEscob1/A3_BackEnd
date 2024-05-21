@@ -1,84 +1,47 @@
 var express = require('express');
+const goalsSchema = require ('../models/goals')
 var router = express.Router();
 
-let goals = [];
-
-var mysql = require('mysql')
-
-var connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  database: 'mysql'
-})
-connection.connect(function(err){
-  if(err){
-    console.error(err);
-    return;
-  }
-  console.log('ID'+connection.threadId)
+router.get('/getGoals/', function(req, res, next){
+  goalsSchema
+        .find()
+        .then((data)=>res.status(200).json(data))
+        .catch((error)=> res.status(500).json({ message: error}));
 })
 
-
-router.get('/getGoals', function(req, res, next){
-    let queryCreateGoal='SELECT * FROM goals';
-        connection.query(queryCreateGoal, function(err, results, fields){
-            if(err){
-              console.log(err);
-              res.status(500).json(err)
-              return;
-            }else{
-              console.log(results);
-              res.status(200).json({results});
-            }
-          }); 
+router.put('/putGoals/', function(req, res, next){
+  const { id } = req.params;
+  const { name, description, dueDate } = req.body;
+  goalsSchema
+        .updateOne({_id: id}, { $set: {name, description, dueDate}})
+        .then((data)=>res.status(200).json(data))
+        .catch((error)=> res.status(500).json({ message: error}));
 })
 
-router.delete('/removeGoal/:id', function(req, res, next){
-    console.log(req.params.id);
-    if(req.params && req.params.id){
-        let id = req.params.id
-        let queryCreateGoal='DELETE FROM goals WHERE id="'+id+'"';
-        connection.query(queryCreateGoal, function(err, results, fields){
-            if(err){
-              console.log(err);
-              res.status(500).json(err)
-              return;
-            }else{
-              console.log(results);
-              res.status(200).json({});
-            }
-          }); 
-    }else{
-        res.status(400).json({})
-    }
-});
+router.delete('/removeGoals/', function(req, res, next){
+  const { id } = req.params;
+  if(req.params && req.params.id){
+  goalsSchema
+        .remove({_id: id})
+        .then((data)=>res.status(200).json(data))
+        .catch((error)=> res.status(500).json({ message: error}));
+  }else{
+    res.status(400).json({})
+  }  
+})
+
 
 router.post('/addGoals', function(req, res, next){
-    let timestamp = Date.now() + Math.random();
     if(req.body && req.body.name && req.body.description && req.body.dueDate){
-        let queryCreateGoal='INSERT INTO goals(name, description, dueDAte) \
-        VALUES("'+req.body.name+'", "'+req.body.description+'", "'+req.body.dueDate+'")';
-        connection.query(queryCreateGoal, function(err, results, fields){
-            if(err){
-              console.log(err);
-              res.status(500).json(err)
-              return;
-            }else{
-              console.log(results);
-              res.status(200).json({});
-            }
-          }); 
-    }
+      const goal = goalsSchema(req.body);
+      goal
+        .save()
+        .then((data)=>res.status(200).json(data))
+        .catch((error)=> res.status(500).json({ message: error}));
+    }else{
+      res.status(400).json({error:"entrada no valida"});
+  }
 })
 
-router.delete('/removeGoals', function(req, res, next){
-    if(req.params && req.params.id){
-        let id = req.params.id;
-        goals = goals.filter( goals => goals.id !== id);
-        res.json(goals)
-    }else{
-        res.json([{}]);
-    }
-})
 
 module.exports = router;

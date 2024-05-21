@@ -5,54 +5,15 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const router = express.Router();
 const cors = require('cors')
+require('dotenv').config();
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb://127.0.0.1:27017/desarrolloweb')
+mongoose
+.connect(process.env.MONGODB_URI)
+.then(()=>console.log('connected to MongoDB Atlas'))
+.catch((error)=>console.error(error))
 
-var mysql = require('mysql')
 
-var connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  database: 'mysql'
-})
-connection.connect(function(err){
-  if(err){
-    console.error(err);
-    return;
-  }
-  console.log('ID'+connection.threadId)
-})
-
-let queryCreateDB = 'CREATE DATABASE IF NOT EXISTS desarrolloweb'
-
-connection.query(queryCreateDB, function(err, results, fields){
-  if(err){
-    console.log(err);
-    return;
-  }else{
-    console.log(results);
-  }
-});
-
-let queryCreateTableGoals = 'CREATE TABLE IF NOT EXISTS `goals` ( \
-  `id` int(11) NOT NULL auto_increment, \   \
-  `name` varchar(250) NOT NULL default \'\', \
-  `description` varchar(250) NOT NULL DEFAULT \'\', \
-  `dueDate` varchar(250) NOT NULL DEFAULT \'\', \
-  PRIMARY KEY (`id`) \
-  );'
-
-connection.query(queryCreateTableGoals , function(err, results, fields){
-  if(err){
-    console.log(err);
-    return;
-  }else{
-    console.log(results);
-  }
-});
-
-connection.destroy()
 
 
 let apiKey;
@@ -77,6 +38,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var usersTasks= require('./routes/tasks');
 var usersGoals= require('./routes/goals');
+const { error } = require('console');
 
 var app = express();
 
